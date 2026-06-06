@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Safe Eject Linux
+Comment=Safely unmount and power off external drives
+Exec=safe-eject.sh
+Icon=media-removable
+Terminal=false
+Type=Application
+Categories=Utility;System;
+Keywords=eject;unmount;usb;hdd;ssd;drive;external;udisks;
