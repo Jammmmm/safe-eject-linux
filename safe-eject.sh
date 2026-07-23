@@ -15,11 +15,21 @@
 #   udisksctl → kernel unmount syscall directly
 #             → GVfs/Nautilus handles still live → EBUSY
 #
-# REQUIRES: zenity, udisks2, lsof, glib2-tools (gio)
-#    Install: sudo apt install zenity udisks2 lsof libglib2.0-bin
+# REQUIRES: zenity, udisks2, lsof, glib2-tools (gio), flock
+#    Install: sudo apt install zenity udisks2 lsof libglib2.0-bin util-linux
 #================================================================================
 
 set -uo pipefail
+
+# =============================================================================
+# Preflight: Ensure the script is not already running
+# =============================================================================
+LOCKFILE="/tmp/safe-eject-linux.lock"
+exec 9>"${LOCKFILE}"
+
+if ! flock -n 9; then
+    exit 1
+fi
 
 # =============================================================================
 # Preflight: verify required tools are present
@@ -30,7 +40,7 @@ for TOOL in zenity udisksctl lsof lsblk findmnt gio; do
 done
 
 if [[ ${#MISSING[@]} -gt 0 ]]; then
-    MSG="Required tools are not installed: ${MISSING[*]}\n\nInstall with:\n  sudo apt install zenity udisks2 lsof libglib2.0-bin"
+    MSG="Required tools are not installed: ${MISSING[*]}\n\nInstall with:\n  sudo apt install zenity udisks2 lsof libglib2.0-bin util-linux"
     if command -v zenity &>/dev/null; then
         zenity --error --title="Missing Dependencies" --text="$MSG" --width=400
     else
