@@ -60,6 +60,7 @@ while IFS= read -r LINE; do
     NAME=$(awk '{print $1}' <<< "$LINE")
     SIZE=$(awk '{print $2}' <<< "$LINE")
     MODEL=$(awk '{$1=$2=""; sub(/^[[:space:]]*/,""); print}' <<< "$LINE")
+    LABEL=$(lsblk -n -o LABEL "/dev/${NAME}" | awk 'NF { print " (" $0 ")"; exit }')
 
     [[ "$NAME" == loop* ]] && continue
     [[ -v SYSTEM_DISKS["$NAME"] ]] && continue
@@ -69,8 +70,8 @@ while IFS= read -r LINE; do
     DISPLAY_MODEL="${DISPLAY_MODEL//</&lt;}"
     DISPLAY_MODEL="${DISPLAY_MODEL//>/&gt;}"
 
-    DRIVES_LIST+=("/dev/${NAME}" "(${SIZE}) — ${DISPLAY_MODEL}")
-done < <(lsblk -d -n --raw -o NAME,SIZE,MODEL)
+    DRIVES_LIST+=("/dev/${NAME}" "(${SIZE}) — ${DISPLAY_MODEL}${LABEL}")
+done < <(lsblk -d -n -o NAME,SIZE,MODEL)
 
 if [[ ${#DRIVES_LIST[@]} -eq 0 ]]; then
     zenity --error \
